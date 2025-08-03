@@ -100,7 +100,7 @@ def home():
         'status': 'healthy',
         'message': '피보나치 텔레그램 웹훅 서버가 정상 작동중입니다!',
         'time': datetime.now().isoformat(),
-        'endpoints': ['/test', '/webhook', '/webhook/test']
+        'endpoints': ['/test', '/webhook', '/webhook/test', '/webhook/test-exit']
     })
 
 @app.route('/test', methods=['GET'])
@@ -162,7 +162,7 @@ def webhook():
         print(f"웹훅 처리 오류: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@app.route('/webhook/test', methods=['POST'])
+@app.route('/webhook/test', methods=['GET', 'POST'])
 def webhook_test():
     """웹훅 테스트 엔드포인트"""
     test_entry_data = {
@@ -179,7 +179,28 @@ def webhook_test():
     success = send_telegram_message(message)
     
     if success:
-        return jsonify({'status': 'success', 'message': '테스트 신호 전송 완료!'})
+        return jsonify({'status': 'success', 'message': '테스트 진입 신호 전송 완료!'})
+    else:
+        return jsonify({'status': 'error', 'message': '테스트 전송 실패'}), 500
+
+@app.route('/webhook/test-exit', methods=['GET', 'POST'])
+def webhook_test_exit():
+    """웹훅 종료 신호 테스트 엔드포인트"""
+    test_exit_data = {
+        "action": "EXIT",
+        "symbol": "BTCUSDT",
+        "exit_price": 46150.0,
+        "entry_price": 45000.0,
+        "result": "PROFIT",
+        "profit_rate": "25.56",
+        "time": "1709467800000"
+    }
+    
+    message = format_fibonacci_message(test_exit_data)
+    success = send_telegram_message(message)
+    
+    if success:
+        return jsonify({'status': 'success', 'message': '테스트 종료 신호 전송 완료!'})
     else:
         return jsonify({'status': 'error', 'message': '테스트 전송 실패'}), 500
 
